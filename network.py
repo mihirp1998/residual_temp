@@ -98,8 +98,8 @@ class HyperNetwork(nn.Module):
         #self.linear = nn.Linear(emb_dimension, 32, bias=True)
         #self.linear1 = nn.Linear(32, f, bias=True)
         #self.linear1 = nn.DataParallel(self.linear1)
-        self.w1 = Parameter(torch.fmod(torch.randn((emb_dimension, f)),2))
-        self.b1 = Parameter(torch.fmod(torch.randn((f)),2))
+        self.w1 = Parameter(torch.fmod(torch.zeros((emb_dimension, f)),2))
+        self.b1 = Parameter(torch.fmod(torch.zeros((f)),2))
 
         #self.w2 = Parameter(torch.fmod(torch.randn((h,f)),2))
         #self.b2 = Parameter(torch.fmod(torch.randn((f)),2))

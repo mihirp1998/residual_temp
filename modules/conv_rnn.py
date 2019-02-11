@@ -121,9 +121,9 @@ class ConvLSTMCellTemp(ConvRNNCellBase):
         self.conv_hh = nn.Conv2d(
             in_channels=self.hidden_channels,
             out_channels=gate_channels,
-            kernel_size=hidden_kernel_size,
+            kernel_size=self.hidden_kernel_size,
             stride=1,
-            padding=hidden_padding,
+            padding=self.hidden_padding,
             dilation=1,
             bias=bias)
           

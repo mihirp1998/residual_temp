@@ -79,16 +79,15 @@ def resume(epoch=None):
     else:
         s = 'epoch'
     print("Loaded")
-    '''
+
     encoder.load_state_dict(
-        torch.load('checkpoint100_new/encoder_temp.pth'.format(s, epoch)))
+        torch.load('checkpoint/encoder_{}_{:08d}.pth'.format(s, epoch)))
     binarizer.load_state_dict(
-        torch.load('checkpoint100_new/binarizer_temp.pth'.format(s, epoch)))
+        torch.load('checkpoint/binarizer_{}_{:08d}.pth'.format(s, epoch)))
     decoder.load_state_dict(
-        torch.load('checkpoint100_new/decoder_temp.pth'.format(s, epoch)))
-    unet.load_state_dict(
-        torch.load('checkpoint100_new/unet_temp.pth'.format(s, epoch)))
-        '''
+        torch.load('checkpoint/decoder_{}_{:08d}.pth'.format(s, epoch)))
+
+        
     #encoder.load_state_dict(
      #   torch.load('checkpoint100_small/encoder_{}_{:08d}.pth'.format(s, epoch)))
     #binarizer.load_state_dict(
@@ -107,8 +106,8 @@ def resume(epoch=None):
     print("non common keys ",[i for i in hypernet_dict.keys() if i not in pretrain_hypernet.keys()])
     hypernet.load_state_dict(hypernet_dict)
     '''
-    hypernet.load_state_dict(
-        torch.load('checkpoint100_100vids/hypernet_{}_{:08d}.pth'.format(s, epoch)))
+   # hypernet.load_state_dict(
+    #    torch.load('checkpoint100_100vids/hypernet_{}_{:08d}.pth'.format(s, epoch)))
 
 def save(index, epoch=True):
     if not os.path.exists('checkpoint100_100vids'):
@@ -130,7 +129,7 @@ def save(index, epoch=True):
     torch.save(hypernet.state_dict(), 'checkpoint100_100vids/hypernet_{}_{:08d}.pth'.format(s, index))   
 
 #
-# resume()
+resume(10)
 
 scheduler = LS.MultiStepLR(solver, milestones=[2, 3, 20, 50, 100], gamma=0.5)
 
