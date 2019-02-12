@@ -20,7 +20,7 @@ parser.add_argument(
 parser.add_argument(
     '--train', '-f', required=True, type=str, help='folder of training images')
 parser.add_argument(
-    '--max-epochs', '-e', type=int, default=200, help='max epochs')
+    '--max-epochs', '-e', type=int, default=20000, help='max epochs')
 parser.add_argument('--lr', type=float, default=0.0005, help='learning rate')
 # parser.add_argument('--cuda', '-g', action='store_true', help='enables cuda')
 parser.add_argument(
@@ -29,14 +29,14 @@ parser.add_argument('--checkpoint', type=int, help='unroll iterations')
 args = parser.parse_args()
 
 ## load 32x32 patches from images
-import dataset
+import new_dataset as dataset
 
 train_transform = transforms.Compose([
     transforms.RandomCrop((32, 32)),
     transforms.ToTensor(),
 ])
 
-train_set = dataset.ImageFolder(root=args.train,train=True,file_name ="outValid15_100Vids.p")
+train_set = dataset.ImageFolder(root=args.train,train=False,file_name ="outValid15_100Vids.p")
 
 train_loader = data.DataLoader(
     dataset=train_set, batch_size=args.batch_size, shuffle=True, num_workers=1)
@@ -81,12 +81,14 @@ def resume(epoch=None):
     print("Loaded")
 
     encoder.load_state_dict(
-        torch.load('checkpoint/encoder_{}_{:08d}.pth'.format(s, epoch)))
+        torch.load('checkpoint/encoder_{}_{:08d}.pth'.format("epoch",10)))
     binarizer.load_state_dict(
-        torch.load('checkpoint/binarizer_{}_{:08d}.pth'.format(s, epoch)))
+        torch.load('checkpoint/binarizer_{}_{:08d}.pth'.format("epoch",10)))
     decoder.load_state_dict(
-        torch.load('checkpoint/decoder_{}_{:08d}.pth'.format(s, epoch)))
-
+        torch.load('checkpoint/decoder_{}_{:08d}.pth'.format("epoch",10)))
+    hypernet.load_state_dict(
+        torch.load('checkpoint100_100vids/hypernet_{}_{:08d}.pth'.format(s, epoch)))
+    print("loaded",epoch,s)
         
     #encoder.load_state_dict(
      #   torch.load('checkpoint100_small/encoder_{}_{:08d}.pth'.format(s, epoch)))
@@ -106,8 +108,7 @@ def resume(epoch=None):
     print("non common keys ",[i for i in hypernet_dict.keys() if i not in pretrain_hypernet.keys()])
     hypernet.load_state_dict(hypernet_dict)
     '''
-   # hypernet.load_state_dict(
-    #    torch.load('checkpoint100_100vids/hypernet_{}_{:08d}.pth'.format(s, epoch)))
+   # hypernet.load_state_dict(torch.load('checkpoint100_100vids/hypernet_{}_{:08d}.pth'.format(s, epoch)))
 
 def save(index, epoch=True):
     if not os.path.exists('checkpoint100_100vids'):
@@ -129,9 +130,9 @@ def save(index, epoch=True):
     torch.save(hypernet.state_dict(), 'checkpoint100_100vids/hypernet_{}_{:08d}.pth'.format(s, index))   
 
 #
-resume(10)
+#resume(67)
 
-scheduler = LS.MultiStepLR(solver, milestones=[2, 3, 20, 50, 100], gamma=0.5)
+scheduler = LS.MultiStepLR(solver, milestones=[20, 75, 200, 500, 1000], gamma=0.5)
 
 last_epoch = 0
 if args.checkpoint:
@@ -144,11 +145,12 @@ if args.checkpoint:
 vepoch=0
 for epoch in range(last_epoch + 1, args.max_epochs + 1):
 
-    scheduler.step()
+    #scheduler.step()
 
     for batch, (data,id_num,name) in enumerate(train_loader):
         batch_t0 = time.time()
-
+        data = data[0]
+        #print("data shape ",data.shape,"id num ",id_num.shape)
         ## init lstm state
         batch_size, input_channels, height, width = data.size()
 
@@ -250,5 +252,5 @@ for epoch in range(last_epoch + 1, args.max_epochs + 1):
         ## save checkpoint every 500 training steps
         if index % 1000 == 0 and index != 0:
             save(0, False)
-
-    save(epoch)
+    if epoch % 5 == 0:
+        save(epoch)

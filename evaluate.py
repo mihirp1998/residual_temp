@@ -1,5 +1,6 @@
 from moduleMetric import msssim, psnr
 import argparse
+#import new_dataset as dataset
 import dataset
 import network
 import torch.utils.data as data
@@ -71,8 +72,9 @@ def finish_batch(args, original, out_imgs,
 
 
 
-def forward_model(model, data,idno, args,iterations):
+def forward_model(model, data,id_num, args,iterations):
 	with torch.no_grad():
+		#data = data[0]
 		encoder, binarizer, decoder,hypernet = model
 		batch_size, input_channels, height, width = data.size()
 		encoder_h_1 = (Variable(
@@ -89,9 +91,9 @@ def forward_model(model, data,idno, args,iterations):
 						   torch.zeros(batch_size, 512, height // 16, width // 16)))
 
 		decoder_h_1 = (Variable(
-			torch.zeros(batch_size, 512+512, height // 16, width // 16)),
+			torch.zeros(batch_size, 512, height // 16, width // 16)),
 					   Variable(
-						   torch.zeros(batch_size, 512+512, height // 16, width // 16)))
+						   torch.zeros(batch_size, 512, height // 16, width // 16)))
 		decoder_h_2 = (Variable(
 			torch.zeros(batch_size, 512, height // 8, width // 8)),
 					   Variable(
@@ -132,23 +134,23 @@ def forward_model(model, data,idno, args,iterations):
 		losses = []
 
 		wenc,wdec,wbin = hypernet(id_num,batch_size)
-
+		#pickle.dump(wenc[0],open("wenc2.p","wb"))
 		codes = []
 		prev_psnr = 0.0
 		for i in range(iterations):
 			encoder_input = res
 
 			# Encode.
-            encoded, encoder_h_1, encoder_h_2, encoder_h_3 = encoder(
-                res,wenc,encoder_h_1, encoder_h_2, encoder_h_3,batch_size)
+			encoded, encoder_h_1, encoder_h_2, encoder_h_3 = encoder(
+				res,wenc,encoder_h_1, encoder_h_2, encoder_h_3,batch_size)
 
 			# Binarize.
-            codes = binarizer(encoded,wbin,batch_size)
+			codes = binarizer(encoded,wbin,batch_size)
 			# if args.save_codes:
 			#     codes.append(code.data.cpu().numpy())
-
-            output, decoder_h_1, decoder_h_2, decoder_h_3, decoder_h_4 = decoder(
-                codes,wdec, decoder_h_1, decoder_h_2, decoder_h_3, decoder_h_4,batch_size)
+			#print(codes.shape)
+			output, decoder_h_1, decoder_h_2, decoder_h_3, decoder_h_4 = decoder(
+				codes,wdec, decoder_h_1, decoder_h_2, decoder_h_3, decoder_h_4,batch_size)
 
 			res = res - output
 			out_img = out_img + output.data.cpu()
@@ -200,20 +202,20 @@ def run_eval(model, eval_loader, args, output_suffix=''):
 
 
 def resume(epoch=None):
-    if epoch is None:
-        s = 'iter'
-        epoch = 0
-    else:
-        s = 'epoch'
-    encoder.load_state_dict(
-        torch.load('checkpoint/encoder_{}_{:08d}.pth'.format(10, "epoch")))
-    binarizer.load_state_dict(
-        torch.load('checkpoint/binarizer_{}_{:08d}.pth'.format(10, "epoch")))
-    decoder.load_state_dict(
-        torch.load('checkpoint/decoder_{}_{:08d}.pth'.format(10, "epoch")))
-    hypernet.load_state_dict(
-        torch.load('{}/hypernet_{}_{:08d}.pth'.format(args.directory,s, epoch)))
-    print("loaded")
+	if epoch is None:
+		s = 'iter'
+		epoch = 0
+	else:
+		s = 'epoch'
+	encoder.load_state_dict(
+		torch.load('checkpoint/encoder_{}_{:08d}.pth'.format("epoch",10)))
+	binarizer.load_state_dict(
+		torch.load('checkpoint/binarizer_{}_{:08d}.pth'.format("epoch",10)))
+	decoder.load_state_dict(
+		torch.load('checkpoint/decoder_{}_{:08d}.pth'.format("epoch",10)))
+	hypernet.load_state_dict(
+		torch.load('{}/hypernet_{}_{:08d}.pth'.format(args.directory,s, epoch)))
+	print("loaded")
 
 
 

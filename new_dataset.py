@@ -8,6 +8,8 @@ import torch.utils.data as data
 from PIL import Image
 import pickle
 import random
+from collections import defaultdict
+
 IMG_EXTENSIONS = [
     '.jpg',
     '.JPG',
@@ -88,26 +90,29 @@ class ImageFolder(data.Dataset):
             id_val = i[0].split("/")[1][:-9]
             self.d[id_val].append(i[0])
             self.id_names.append(id_val)
-
+        self.id_names = list(set(self.id_names))
         #print(images)
         self.root = root
         self.imgs = images
         self.loader = loader
         self.train= train
-
+        #print(self.d)
         #self.vid_freq,self.vid2id = self.genIds()
         #pickle.dump(self.vid2id,open("train_dict1.p","wb"))
 
         self.vid2id = pickle.load(open("train_dict.p","rb"))
         self.vid_count = len(self.vid2id)
-        print("vid count ",self.vid_count)
+        print("vid count ",self.vid_count,len(self.id_names))
 
         #print("ids ",self.vid2id['framezg_14kFY2OM_000009_000019'])#should be 94
 
     def __getitem__(self, index):
         id_name = self.id_names[index]
         id_num = self.vid2id[id_name]
-        files = random.shuffle(self.d[id_name])[:8]
+        #print(self.d[id_name])
+        random.shuffle(self.d[id_name])
+        files = self.d[id_name][:2]
+        #print(id_name,files)
         imgs = self.loader(files,self.root)
 
         imgs = np_to_torch(imgs)
@@ -116,7 +121,7 @@ class ImageFolder(data.Dataset):
         if self.train:
             imgs = crop_cv2(imgs,128,128)
         # image = imgs[:3]
-        return imgs,id_num,filenames
+        return imgs,id_num,id_name
 
     def __len__(self):
         return len(self.id_names)

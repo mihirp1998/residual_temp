@@ -43,8 +43,9 @@ class EncoderCell(nn.Module):
         init_conv,rnn1_i,rnn1_h,rnn2_i,rnn2_h,rnn3_i,rnn3_h = conv_w
         self.batchsize=batchsize
         #x = self.conv1(input)
-        init_conv=  self.conv.weight.unsqueeze(0) + init_conv
-        x = batchConv2d(input,init_conv,self.batchsize,stride=2, padding=1, bias=False)
+        init_conv=  self.conv.weight + init_conv
+        #x = batchConv2d(input,init_conv,self.batchsize,stride=2, padding=1, bias=False)
+        x= F.conv2d(input,init_conv,stride=2,padding=1)
         # x = self.conv(input)
 
         hidden1 = self.rnn1(x,rnn1_i,rnn1_h,hidden1,self.batchsize)
@@ -67,8 +68,9 @@ class Binarizer(nn.Module):
 
     def forward(self, input,init_conv,batchsize):
         #feat = self.conv(input)
-        init_conv =  self.conv.weight.unsqueeze(0) + init_conv
-        feat = batchConv2d(input,init_conv,batchsize,stride=1, padding=0, bias=False)
+        init_conv =  self.conv.weight + init_conv
+        #feat = batchConv2d(input,init_conv,batchsize,stride=1, padding=0, bias=False)
+        feat= F.conv2d(input,init_conv,stride=1,padding=0)
         x = F.tanh(feat)
         return self.sign(x)
 
@@ -112,62 +114,62 @@ class HyperNetwork(nn.Module):
         h_final = torch.matmul(contextEmbed, self.w1) + self.b1
 
         dec_init_conv = h_final[:,:self.layer_cum[0]]
-        dec_init_conv = dec_init_conv.view(self.batchsize,512,32,1,1)
+        dec_init_conv = dec_init_conv.view(512,32,1,1)
         #print("datatype",init_conv.dtype)
         dec_rnn1_i = h_final[:,self.layer_cum[0]:self.layer_cum[1]]
         #print(rnn1_i.shape)
-        dec_rnn1_i = dec_rnn1_i.view(self.batchsize,2048,512,3,3)
+        dec_rnn1_i = dec_rnn1_i.view(2048,512,3,3)
         
         dec_rnn1_h = h_final[:,self.layer_cum[1]:self.layer_cum[2]]
-        dec_rnn1_h = dec_rnn1_h.view(self.batchsize,2048,512,1,1)
+        dec_rnn1_h = dec_rnn1_h.view(2048,512,1,1)
 
         dec_rnn2_i = h_final[:,self.layer_cum[2]:self.layer_cum[3]]
-        dec_rnn2_i = dec_rnn2_i.view(self.batchsize,2048,128,3,3)
+        dec_rnn2_i = dec_rnn2_i.view(2048,128,3,3)
 
         dec_rnn2_h = h_final[:,self.layer_cum[3]:self.layer_cum[4]]
-        dec_rnn2_h = dec_rnn2_h.view(self.batchsize,2048,512,1,1)
+        dec_rnn2_h = dec_rnn2_h.view(2048,512,1,1)
 
         dec_rnn3_i = h_final[:,self.layer_cum[4]:self.layer_cum[5]]
-        dec_rnn3_i = dec_rnn3_i.view(self.batchsize,1024,128,3,3)
+        dec_rnn3_i = dec_rnn3_i.view(1024,128,3,3)
 
         dec_rnn3_h = h_final[:,self.layer_cum[5]:self.layer_cum[6]]
-        dec_rnn3_h = dec_rnn3_h.view(self.batchsize,1024,256,3,3)
+        dec_rnn3_h = dec_rnn3_h.view(1024,256,3,3)
 
         dec_rnn4_i = h_final[:,self.layer_cum[6]:self.layer_cum[7]]
-        dec_rnn4_i = dec_rnn4_i.view(self.batchsize,512,64,3,3)
+        dec_rnn4_i = dec_rnn4_i.view(512,64,3,3)
 
         dec_rnn4_h = h_final[:,self.layer_cum[7]:self.layer_cum[8]]
-        dec_rnn4_h = dec_rnn4_h.view(self.batchsize,512,128,3,3)
+        dec_rnn4_h = dec_rnn4_h.view(512,128,3,3)
 
         dec_final_conv = h_final[:,self.layer_cum[8]:self.layer_cum[9]]
-        dec_final_conv = dec_final_conv.view(self.batchsize,3,32,1,1)
+        dec_final_conv = dec_final_conv.view(3,32,1,1)
 
 
 
         enc_init_conv = h_final[:,self.layer_cum[9]:self.layer_cum[10]]
-        enc_init_conv = enc_init_conv.view(self.batchsize,64,3,3,3)
+        enc_init_conv = enc_init_conv.view(64,3,3,3)
 
         enc_rnn1_i = h_final[:,self.layer_cum[10]:self.layer_cum[11]]
-        enc_rnn1_i = enc_rnn1_i.view(self.batchsize,1024,64,3,3)
+        enc_rnn1_i = enc_rnn1_i.view(1024,64,3,3)
 
         enc_rnn1_h = h_final[:,self.layer_cum[11]:self.layer_cum[12]]
-        enc_rnn1_h = enc_rnn1_h.view(self.batchsize,1024,256,1,1)
+        enc_rnn1_h = enc_rnn1_h.view(1024,256,1,1)
 
         enc_rnn2_i = h_final[:,self.layer_cum[12]:self.layer_cum[13]]
-        enc_rnn2_i = enc_rnn2_i.view(self.batchsize,2048,256,3,3)
+        enc_rnn2_i = enc_rnn2_i.view(2048,256,3,3)
 
         enc_rnn2_h = h_final[:,self.layer_cum[13]:self.layer_cum[14]]
-        enc_rnn2_h = enc_rnn2_h.view(self.batchsize,2048,512,1,1)
+        enc_rnn2_h = enc_rnn2_h.view(2048,512,1,1)
 
         enc_rnn3_i = h_final[:,self.layer_cum[14]:self.layer_cum[15]]
-        enc_rnn3_i = enc_rnn3_i.view(self.batchsize,2048,512,3,3)
+        enc_rnn3_i = enc_rnn3_i.view(2048,512,3,3)
 
         enc_rnn3_h = h_final[:,self.layer_cum[15]:self.layer_cum[16]]
-        enc_rnn3_h = enc_rnn3_h.view(self.batchsize,2048,512,1,1)
+        enc_rnn3_h = enc_rnn3_h.view(2048,512,1,1)
         
 
         bin_init_conv = h_final[:,self.layer_cum[16]:self.layer_cum[17]]
-        bin_init_conv = bin_init_conv.view(self.batchsize,32,512,1,1)
+        bin_init_conv = bin_init_conv.view(32,512,1,1)
 
 
         return [[enc_init_conv,enc_rnn1_i,enc_rnn1_h,enc_rnn2_i,enc_rnn2_h,enc_rnn3_i,enc_rnn3_h],[dec_init_conv,dec_rnn1_i,dec_rnn1_h,dec_rnn2_i,dec_rnn2_h,dec_rnn3_i,dec_rnn3_h,dec_rnn4_i,dec_rnn4_h,dec_final_conv],bin_init_conv]
@@ -221,9 +223,11 @@ class DecoderCell(nn.Module):
         self.batchsize=batchsize
         init_conv,rnn1_i,rnn1_h,rnn2_i,rnn2_h,rnn3_i,rnn3_h,rnn4_i,rnn4_h,final_conv = conv_w
         
-        init_conv = init_conv + self.conv1.weight.unsqueeze(0)
+        init_conv = init_conv + self.conv1.weight
         #x = self.conv1(input)
-        x = batchConv2d(input,init_conv,self.batchsize,stride=1, padding=0, bias=False)
+        #x = batchConv2d(input,init_conv,self.batchsize,stride=1, padding=0, bias=False)
+        x= F.conv2d(input,init_conv,stride=1,padding=0)
+        #print("x size",x.shape)
         # conv_w_i,conv_w_h,kernel = conv_w
         # conv_w_i = conv_w_i.contiguous().view([-1,64,conv_w_i.shape[3],conv_w_i.shape[4]])
         # conv_w_h = conv_w_h.contiguous().view([-1,128,conv_w_h.shape[3],conv_w_h.shape[4]])
@@ -244,9 +248,11 @@ class DecoderCell(nn.Module):
         x = hidden4[0]
         x = F.pixel_shuffle(x, 2)
         # x =x.view(1,-1,x.shape[2],x.shape[3])
-        final_conv = final_conv + self.conv2.weight.unsqueeze(0)
+        final_conv = final_conv + self.conv2.weight
 
-        x = batchConv2d(x,final_conv,self.batchsize,stride=1, padding=0, bias=False)
+        #x = batchConv2d(x,final_conv,self.batchsize,stride=1, padding=0, bias=False)
+        x= F.conv2d(x,final_conv,stride=1,padding=0)
+
         # x= F.conv2d(x, kernel,groups=self.batchsize)
         # x= x.view(self.batchsize,3,x.shape[2],x.shape[3])
         x = F.tanh(x) / 2
