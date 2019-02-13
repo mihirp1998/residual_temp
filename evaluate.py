@@ -268,6 +268,13 @@ encoder = encoder.cuda()
 binarizer = binarizer.cuda()
 decoder = decoder.cuda()
 
+def count_parameters(model):
+    return sum(p.numel() for p in model.parameters() if p.requires_grad)
+print("hypernet ",count_parameters(hypernet))    
+print("encoder ",count_parameters(encoder))    
+print("decoder ",count_parameters(decoder))    
+print("binarizer ",count_parameters(binarizer)) 
+
 model = [encoder, binarizer, decoder,hypernet]
 resume()
 if args.checkpoint:

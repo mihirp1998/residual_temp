@@ -118,6 +118,9 @@ class ConvLSTMCellTemp(ConvRNNCellBase):
             dilation=self.dilation,
             bias=bias)
 
+        for param in self.conv_ih.parameters():
+            param.requires_grad = False
+
         self.conv_hh = nn.Conv2d(
             in_channels=self.hidden_channels,
             out_channels=gate_channels,
@@ -126,6 +129,9 @@ class ConvLSTMCellTemp(ConvRNNCellBase):
             padding=self.hidden_padding,
             dilation=1,
             bias=bias)
+
+        for param in self.conv_hh.parameters():
+            param.requires_grad = False
           
 
     def forward(self, input ,conv_w_i, conv_w_h, hidden,batchsize):

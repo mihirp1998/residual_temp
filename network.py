@@ -13,6 +13,9 @@ class EncoderCell(nn.Module):
         self.conv = nn.Conv2d(
             3, 64, kernel_size=3, stride=2, padding=1, bias=False)
 
+        for param in self.conv.parameters():
+            param.requires_grad = False
+
         #self.hyper1 = HyperConvLSTMCell(64,256,256,128,stride=2)
         self.rnn1 = ConvLSTMCellTemp(
             64,
@@ -64,6 +67,10 @@ class Binarizer(nn.Module):
     def __init__(self):
         super(Binarizer, self).__init__()
         self.conv = nn.Conv2d(512, 32, kernel_size=1, bias=False)
+
+        for param in self.conv.parameters():
+            param.requires_grad = False
+
         self.sign = Sign()
 
     def forward(self, input,init_conv,batchsize):
@@ -182,6 +189,10 @@ class DecoderCell(nn.Module):
         
         self.conv1 = nn.Conv2d(
             32, 512, kernel_size=1, stride=1, padding=0, bias=False)
+
+        for param in self.conv1.parameters():
+            param.requires_grad = False
+
         self.rnn1 = ConvLSTMCellTemp(
             512,
             512,
@@ -216,6 +227,9 @@ class DecoderCell(nn.Module):
             bias=False)
         self.conv2 = nn.Conv2d(
             32, 3, kernel_size=1, stride=1, padding=0, bias=False)
+
+        for param in self.conv2.parameters():
+            param.requires_grad = False
         
 
 
