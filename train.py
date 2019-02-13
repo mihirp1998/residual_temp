@@ -235,7 +235,7 @@ for epoch in range(last_epoch + 1, args.max_epochs + 1):
 
         loss_mini_batch += loss.data[0]
 
-        if index % args.update == 0:
+        if (index +1) % args.update == 0:
             # Do a SGD step once every iter_size iterations
             solver.step()
             solver.zero_grad()
