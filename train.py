@@ -23,9 +23,10 @@ parser.add_argument(
     '--max-epochs', '-e', type=int, default=20000, help='max epochs')
 parser.add_argument('--lr', type=float, default=0.0005, help='learning rate')
 # parser.add_argument('--cuda', '-g', action='store_true', help='enables cuda')
-parser.add_argument(
-    '--iterations', type=int, default=16, help='unroll iterations')
+parser.add_argument('--iterations', type=int, default=16, help='unroll iterations')
 parser.add_argument('--checkpoint', type=int, help='unroll iterations')
+parser.add_argument('--update', type=int, help='unroll update')
+
 args = parser.parse_args()
 
 ## load 32x32 patches from images
@@ -86,8 +87,8 @@ def resume(epoch=None):
         torch.load('checkpoint/binarizer_{}_{:08d}.pth'.format("epoch",10)))
     decoder.load_state_dict(
         torch.load('checkpoint/decoder_{}_{:08d}.pth'.format("epoch",10)))
-    hypernet.load_state_dict(
-        torch.load('checkpoint100_100vids/hypernet_{}_{:08d}.pth'.format(s, epoch)))
+    # hypernet.load_state_dict(
+    #     torch.load('checkpoint100_100vids/hypernet_{}_{:08d}.pth'.format(s, epoch)))
     print("loaded",epoch,s)
         
     #encoder.load_state_dict(
@@ -111,8 +112,8 @@ def resume(epoch=None):
    # hypernet.load_state_dict(torch.load('checkpoint100_100vids/hypernet_{}_{:08d}.pth'.format(s, epoch)))
 
 def save(index, epoch=True):
-    if not os.path.exists('checkpoint100_100vids'):
-        os.mkdir('checkpoint100_100vids')
+    if not os.path.exists('checkpoint100_100vids_nb'):
+        os.mkdir('checkpoint100_100vids_nb')
 
     if epoch:
         s = 'epoch'
@@ -127,7 +128,7 @@ def save(index, epoch=True):
 
     #torch.save(unet.state_dict(), 'checkpoint100_small/unet_{}_{:08d}.pth'.format(s, index))    
     #torch.save(ff.state_dict(), 'checkpoint100_small/ff_{}_{:08d}.pth'.format(s, index))    
-    torch.save(hypernet.state_dict(), 'checkpoint100_100vids/hypernet_{}_{:08d}.pth'.format(s, index))   
+    torch.save(hypernet.state_dict(), 'checkpoint100_100vids_nb/hypernet_{}_{:08d}.pth'.format(s, index))   
 
 #
 #resume(67)
@@ -143,10 +144,13 @@ if args.checkpoint:
   
 # context = None
 vepoch=0
+index =0
+solver.zero_grad()
+loss_mini_batch = 0
+all_losses = []
 for epoch in range(last_epoch + 1, args.max_epochs + 1):
-
+    loss_mini_batch = 0
     #scheduler.step()
-
     for batch, (data,id_num,name) in enumerate(train_loader):
         batch_t0 = time.time()
         data = data[0]
@@ -196,8 +200,6 @@ for epoch in range(last_epoch + 1, args.max_epochs + 1):
         
         patches = Variable(data.cuda())
 
-        solver.zero_grad()
-
         losses = []
 
         res = patches - 0.5
@@ -222,26 +224,27 @@ for epoch in range(last_epoch + 1, args.max_epochs + 1):
                 codes,wdec, decoder_h_1, decoder_h_2, decoder_h_3, decoder_h_4,batch_size)
             res = res - output
             losses.append(res.abs().mean())
+
+        all_losses.append(losses)
        
         bp_t1 = time.time()
 
         loss = sum(losses) / args.iterations
-
+        loss = loss/args.update
         loss.backward()
 
-        solver.step()
+        loss_mini_batch += loss.data[0]
 
-
-        batch_t1 = time.time()
-
-        print(
-            '[TRAIN] Epoch[{}]({}/{}); Loss: {:.6f}; Backpropagation: {:.4f} sec; Batch: {:.4f} sec'.
-            format(epoch, batch + 1,
-                   len(train_loader), loss.data[0], bp_t1 - bp_t0, batch_t1 -
-                   batch_t0))
-        print(('{:.4f} ' * args.iterations +
-               '\n').format(* [l.data[0] for l in losses]))
-
+        if index % args.update == 0:
+            # Do a SGD step once every iter_size iterations
+            solver.step()
+            solver.zero_grad()
+            # print("Iter: %02d, Loss: %4.4f" % (i, loss_mini_batch/10))
+            batch_t1 = time.time()
+            print('[TRAIN] Epoch[{}]({}/{}); Loss: {:.6f}; Backpropagation: {:.4f} sec; Batch: {:.4f} sec'.format(epoch, batch + 1,len(train_loader), loss_mini_batch/args.update, bp_t1 - bp_t0, batch_t1 -batch_t0))
+            print(('{:.4f} ' * args.iterations +'\n').format(* [l.data[0] for l in np.array(all_losses).mean(axis=0)]))
+            loss_mini_batch = 0
+            all_losses = []
         index = (epoch - 1) * len(train_loader) + batch
         if index % 2000 == 0 and index != 0:
             vepoch+=1
