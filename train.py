@@ -131,7 +131,7 @@ def save(index, epoch=True):
     torch.save(hypernet.state_dict(), 'checkpoint100_100vids_nb/hypernet_{}_{:08d}.pth'.format(s, index))   
 
 #
-#resume(67)
+# resume(67)
 
 scheduler = LS.MultiStepLR(solver, milestones=[20, 75, 200, 500, 1000], gamma=0.5)
 
@@ -253,7 +253,7 @@ for epoch in range(last_epoch + 1, args.max_epochs + 1):
             scheduler.step()
 
         ## save checkpoint every 500 training steps
-        if index % 1000 == 0 and index != 0:
-            save(0, False)
+        # if index % 1000 == 0 and index != 0:
+        #     save(0, False)
     if epoch % 5 == 0:
         save(epoch)
