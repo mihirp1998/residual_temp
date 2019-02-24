@@ -87,7 +87,7 @@ def resume(epoch=None):
         torch.load('checkpoint/binarizer_{}_{:08d}.pth'.format("epoch",10)))
     decoder.load_state_dict(
         torch.load('checkpoint/decoder_{}_{:08d}.pth'.format("epoch",10)))
-    hypernet.load_state_dict(torch.load('checkpoint100_30kvids/hypernet_{}_{:08d}.pth'.format(s, epoch)))
+    # hypernet.load_state_dict(torch.load('checkpoint100_30kvids/hypernet_{}_{:08d}.pth'.format(s, epoch)))
     print("loaded",epoch,s)
     #encoder.load_state_dict(
      #   torch.load('checkpoint100_small/encoder_{}_{:08d}.pth'.format(s, epoch)))
@@ -99,19 +99,19 @@ def resume(epoch=None):
      #   torch.load('checkpoint100_small/unet_{}_{:08d}.pth'.format(s, epoch)))
     #ff.load_state_dict(
      #   torch.load('checkpoint100_small/ff_{}_{:08d}.pth'.format(s, epoch)))
-    '''
+
     hypernet_dict = hypernet.state_dict()
-    pretrain_hypernet = torch.load('checkpoint100_small/hypernet_{}_{:08d}.pth'.format(s, epoch))
+    pretrain_hypernet = torch.load('checkpoint100_30kvids/hypernet_{}_{:08d}.pth'.format(s, epoch))
     pretrain_hypernet= {k: v for k, v in pretrain_hypernet.items() if k in hypernet_dict}
     hypernet_dict.update(pretrain_hypernet)
     print("non common keys ",[i for i in hypernet_dict.keys() if i not in pretrain_hypernet.keys()])
     hypernet.load_state_dict(hypernet_dict)
-    '''
+
    # hypernet.load_state_dict(torch.load('checkpoint100_100vids/hypernet_{}_{:08d}.pth'.format(s, epoch)))
 
 def save(index, epoch=True):
-    if not os.path.exists('checkpoint100_30kvids'):
-        os.mkdir('checkpoint100_30kvids')
+    if not os.path.exists('checkpoint100_30kvids_100'):
+        os.mkdir('checkpoint100_30kvids_100')
 
     if epoch:
         s = 'epoch'
@@ -126,7 +126,7 @@ def save(index, epoch=True):
 
     #torch.save(unet.state_dict(), 'checkpoint100_small/unet_{}_{:08d}.pth'.format(s, index))    
     #torch.save(ff.state_dict(), 'checkpoint100_small/ff_{}_{:08d}.pth'.format(s, index))    
-    torch.save(hypernet.state_dict(), 'checkpoint100_30kvids/hypernet_{}_{:08d}.pth'.format(s, index))   
+    torch.save(hypernet.state_dict(), 'checkpoint100_30kvids_100/hypernet_{}_{:08d}.pth'.format(s, index))   
 
 #
 resume()

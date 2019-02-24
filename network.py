@@ -89,7 +89,7 @@ class HyperNetwork(nn.Module):
         emb_size = num_vids
         emb_dimension= 16
 
-        self.context_embeddings = nn.Embedding(emb_size, emb_dimension, sparse=False)
+        self.context_embeddings_100 = nn.Embedding(emb_size, emb_dimension, sparse=False)
         initrange = 0.5 / emb_dimension
         self.context_embeddings.weight.data.uniform_(-initrange, initrange)
         # self.z_dim = z_dim
@@ -115,7 +115,7 @@ class HyperNetwork(nn.Module):
 
     def forward(self,id_num,batchsize):
         self.batchsize= batchsize
-        contextEmbed = self.context_embeddings(id_num)
+        contextEmbed = self.context_embeddings_100(id_num)
         #h_final= self.linear(contextEmbed)
         #h_final = self.linear1(h_final)
         h_final = torch.matmul(contextEmbed, self.w1) + self.b1

@@ -100,7 +100,7 @@ class ImageFolder(data.Dataset):
         #self.vid_freq,self.vid2id = self.genIds()
         #pickle.dump(self.vid2id,open("train_dict30k.p","wb"))
 
-        self.vid2id = pickle.load(open("train_dict30k.p","rb"))
+        self.vid2id = pickle.load(open("train_dict.p","rb"))
         self.vid_count = len(self.vid2id)
         print("vid count ",self.vid_count,len(self.id_names))
 
