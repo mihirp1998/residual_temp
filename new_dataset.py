@@ -87,7 +87,7 @@ class ImageFolder(data.Dataset):
         self.d = defaultdict(lambda: [])
         self.id_names = []
         for i in images:
-            id_val = i[0].split("/")[1][:-9]
+            id_val = i[0].split("/")[1][:30]
             self.d[id_val].append(i[0])
             self.id_names.append(id_val)
         self.id_names = list(set(self.id_names))
@@ -98,9 +98,9 @@ class ImageFolder(data.Dataset):
         self.train= train
         #print(self.d)
         #self.vid_freq,self.vid2id = self.genIds()
-        #pickle.dump(self.vid2id,open("train_dict1.p","wb"))
+        #pickle.dump(self.vid2id,open("train_dict30k.p","wb"))
 
-        self.vid2id = pickle.load(open("train_dict.p","rb"))
+        self.vid2id = pickle.load(open("train_dict30k.p","rb"))
         self.vid_count = len(self.vid2id)
         print("vid count ",self.vid_count,len(self.id_names))
 
