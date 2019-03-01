@@ -91,7 +91,7 @@ class HyperNetwork(nn.Module):
 
         self.context_embeddings_100 = nn.Embedding(emb_size, emb_dimension, sparse=False)
         initrange = 0.5 / emb_dimension
-        self.context_embeddings.weight.data.uniform_(-initrange, initrange)
+        self.context_embeddings_100.weight.data.uniform_(-initrange, initrange)
         # self.z_dim = z_dim
         enclayer =   [64*3*3*3]+[1024*64*3*3]+[1024*256*1*1]+[2048*256*3*3]+[2048*512*1*1]+[2048*512*3*3]+[2048*512*1*1]
         declayer = [512*32*1*1]+[2048*512*3*3] + [2048*512*1*1] +[2048*128*3*3] + [2048*512*1*1] + [1024*128*3*3] + [1024*256*3*3] + [512*64*3*3] + [512*128*3*3] + [32*3*1*1]
@@ -107,9 +107,11 @@ class HyperNetwork(nn.Module):
         #self.linear = nn.Linear(emb_dimension, 32, bias=True)
         #self.linear1 = nn.Linear(32, f, bias=True)
         #self.linear1 = nn.DataParallel(self.linear1)
+        #self.w1 = Parameter(torch.fmod(torch.zeros((emb_dimension, f)),2),requires_grad=False)
+        #self.b1 = Parameter(torch.fmod(torch.zeros((f)),2),requires_grad=False)
+
         self.w1 = Parameter(torch.fmod(torch.zeros((emb_dimension, f)),2))
         self.b1 = Parameter(torch.fmod(torch.zeros((f)),2))
-
         #self.w2 = Parameter(torch.fmod(torch.randn((h,f)),2))
         #self.b2 = Parameter(torch.fmod(torch.randn((f)),2))
 

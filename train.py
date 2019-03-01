@@ -37,7 +37,7 @@ train_transform = transforms.Compose([
     transforms.ToTensor(),
 ])
 
-train_set = dataset.ImageFolder(root=args.train,train=False,file_name ="trainHyperTuple15.p")
+train_set = dataset.ImageFolder(root=args.train,train=False,file_name ="outValid15_1000Vids.p")
 
 train_loader = data.DataLoader(
     dataset=train_set, batch_size=args.batch_size, shuffle=True, num_workers=1)
@@ -87,6 +87,8 @@ def resume(epoch=None):
         torch.load('checkpoint/binarizer_{}_{:08d}.pth'.format("epoch",10)))
     decoder.load_state_dict(
         torch.load('checkpoint/decoder_{}_{:08d}.pth'.format("epoch",10)))
+    hypernet.load_state_dict(torch.load('checkpoint100_30kvids_100/hypernet_{}_{:08d}.pth'.format(s, epoch)))
+
     # hypernet.load_state_dict(torch.load('checkpoint100_30kvids/hypernet_{}_{:08d}.pth'.format(s, epoch)))
     print("loaded",epoch,s)
     #encoder.load_state_dict(
@@ -99,14 +101,14 @@ def resume(epoch=None):
      #   torch.load('checkpoint100_small/unet_{}_{:08d}.pth'.format(s, epoch)))
     #ff.load_state_dict(
      #   torch.load('checkpoint100_small/ff_{}_{:08d}.pth'.format(s, epoch)))
-
+    '''
     hypernet_dict = hypernet.state_dict()
     pretrain_hypernet = torch.load('checkpoint100_30kvids/hypernet_{}_{:08d}.pth'.format(s, epoch))
     pretrain_hypernet= {k: v for k, v in pretrain_hypernet.items() if k in hypernet_dict}
     hypernet_dict.update(pretrain_hypernet)
     print("non common keys ",[i for i in hypernet_dict.keys() if i not in pretrain_hypernet.keys()])
     hypernet.load_state_dict(hypernet_dict)
-
+    '''
    # hypernet.load_state_dict(torch.load('checkpoint100_100vids/hypernet_{}_{:08d}.pth'.format(s, epoch)))
 
 def save(index, epoch=True):
@@ -244,7 +246,7 @@ for epoch in range(last_epoch + 1, args.max_epochs + 1):
             loss_mini_batch = 0
             all_losses = []
         index = (epoch - 1) * len(train_loader) + batch
-        if index % 2000 == 0 and index != 0:
+        if index % 200  == 0 and index != 0:
             vepoch+=1
             save(0, False)
             #print("scheduled")
@@ -253,5 +255,5 @@ for epoch in range(last_epoch + 1, args.max_epochs + 1):
         ## save checkpoint every 500 training steps
         # if index % 1000 == 0 and index != 0:
         #     save(0, False)
-    if epoch % 1 == 0:
+    if epoch % 10 == 0:
         save(epoch)
